@@ -1,0 +1,25 @@
+{
+  "name": "translation-service",
+  "version": "0.0.1",
+  "description": "",
+  "main": "translations.config.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/codewithkyle/translation-service.git"
+  },
+  "author": "Kyle Andrews",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/codewithkyle/translation-service/issues"
+  },
+  "homepage": "https://github.com/codewithkyle/translation-service#readme",
+  "dependencies": {
+    "chalk": "^2.4.2",
+    "glob": "^7.1.4",
+    "ora": "^3.4.0",
+    "rimraf": "^2.6.3"
+  }
+}
