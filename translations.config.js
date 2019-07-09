@@ -18,48 +18,76 @@ const passiveMatcher = /(["'].*?["']\|t)/g;
 const baseDirectory = 'templates';
 const fileType = 'twig';
 
-const files = glob.sync(`${ baseDirectory }/**/*.${ fileType }`);
-
 class TranslationManager{
     constructor()
     {
-        if(files.length)
+        this.templateFiles = glob.sync(`${ baseDirectory }/**/*.${ fileType }`);
+        if(this.templateFiles.length)
         {
-            if(fs.existsSync('translations'))
-            {
-                rimraf('translations', (err)=>{
-                    if(err){
-                        spinner.text = 'Failed to remove the old file';
-                        spinner.fail();
-                        throw err;
-                    }
-                });
-            }
-            else
-            {
-                this.init();
-            }
+            this.init();
         }
         else
         {
             spinner.fail();
             spinner.text = 'Missing files';
         }
-
-        this.collectedStrings = [];
     }
 
-    init()
-    {
-        spinner.text = 'Getting translation strings';
-        this.getStrings().then(strings => {
-            this.cleanStrings(strings).then(strings => {
-                this.createFile(strings);
+    validate(){
+        return new Promise((resolve, reject)=>{
+            fs.exists('translations', (exists)=>{
+                if(!exists)
+                {
+                    fs.mkdir('translations', (err)=>{
+                        if(err)
+                        {
+                            reject(err);
+                        }
+
+                        resolve();
+                    });
+                }
+                else
+                {
+                    resolve();
+                }
             });
-        })
-        .catch(e => {
-            console.log(e);
         });
+    }
+
+    removeDefault(){
+        return new Promise((resolve, reject)=>{
+            fs.exists('translations/default.php', (exists)=>{
+                if(exists)
+                {
+                    fs.unlink('translations/default.php', (err)=>{
+                        if(err)
+                        {
+                            reject(err);
+                        }
+                        resolve();
+                    });
+                }
+                else
+                {
+                    resolve();
+                }
+            });
+        });
+    }
+
+    async init()
+    {
+        try{
+            await this.validate();
+            await this.removeDefault();
+            const allStrings = await this.getStrings(this.templateFiles);
+            const cleanStrings = await this.cleanStrings(allStrings);
+            await this.createFile(cleanStrings);
+        }catch(error){
+            spinner.fail();
+            throw error;
+        }
     }
 
     createFile(strings)
@@ -74,7 +102,7 @@ class TranslationManager{
 
         content += '];\n';
 
-        fs.writeFile('test.php', content, (err)=>{
+        fs.writeFile('translations/default.php', content, (err)=>{
             if(err)
             {
                 console.log(err);
@@ -114,19 +142,19 @@ class TranslationManager{
         });
     }
 
-    getStrings()
+    getStrings(strings)
     {
         let foundStrings = [];
         let globalFileId = 0;
         return new Promise((resolve) => {
-            for(let i = 0; i < files.length; i++)
+            for(let i = 0; i < strings.length; i++)
             {
                 globalFileId++;
                 const currentFileId = globalFileId;
-                fs.readFile(files[i], 'utf-8', (err, file)=>{
+                fs.readFile(strings[i], 'utf-8', (err, file)=>{
                     if(err)
                     {
-                        console.log(chalk.red('[File Open Error]'), chalk.white(files[i]));
+                        console.log(chalk.red('[File Open Error]'), chalk.white(strings[i]));
                     }
                     else
                     {
