@@ -438,7 +438,6 @@ class TranslationManager{
                     let cleanString = translationString[0].replace(/(\|t)/g, '');
                     cleanString = cleanString.replace(/^["']/gm, '');
                     cleanString = cleanString.replace(/["']$/gm, '');
-                    cleanString = cleanString.replace(/\"/g, '\\"'); 
                     cleanedStrings.push(cleanString);
                 }
 
