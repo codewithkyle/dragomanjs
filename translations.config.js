@@ -57,10 +57,10 @@ class TranslationManager{
 
     removeDefault(){
         return new Promise((resolve, reject)=>{
-            fs.exists('translations/default.php', (exists)=>{
+            fs.exists('translations/default.json', (exists)=>{
                 if(exists)
                 {
-                    fs.unlink('translations/default.php', (err)=>{
+                    fs.unlink('translations/default.json', (err)=>{
                         if(err)
                         {
                             reject(err);
@@ -92,17 +92,24 @@ class TranslationManager{
 
     createFile(strings)
     {
-        let content = '<?php\n\n';
-        content += 'return [\n';
+        let content = '{\n';
 
         for(let i = 0; i < strings.length; i++)
         {
-            content += `\t'${ strings[i] }' => '',\n`;
+            content += `\t"${ strings[i] }": ""`;
+            if(i < strings.length - 1)
+            {
+                content += ',\n';
+            }
+            else
+            {
+                content += '\n';
+            }
         }
 
-        content += '];\n';
+        content += '}\n';
 
-        fs.writeFile('translations/default.php', content, (err)=>{
+        fs.writeFile('translations/default.json', content, (err)=>{
             if(err)
             {
                 console.log(err);
@@ -130,7 +137,7 @@ class TranslationManager{
                     let cleanString = translationString[0].replace(/(\|t)/g, '');
                     cleanString = cleanString.replace(/^["']/gm, '');
                     cleanString = cleanString.replace(/["']$/gm, '');
-                    cleanString = cleanString.replace(/\'/g, "\\'");
+                    cleanString = cleanString.replace(/\"/g, '\\"'); 
                     cleanedStrings.push(cleanString);
 
                     if(stringId === currentStringId)
@@ -142,32 +149,34 @@ class TranslationManager{
         });
     }
 
-    getStrings(strings)
+    getStrings(files)
     {
-        let foundStrings = [];
-        let globalFileId = 0;
+        const foundStrings = [];
+        const checkedFiles = [];
         return new Promise((resolve) => {
-            for(let i = 0; i < strings.length; i++)
+            for(let i = 0; i < files.length; i++)
             {
-                globalFileId++;
-                const currentFileId = globalFileId;
-                fs.readFile(strings[i], 'utf-8', (err, file)=>{
+                fs.readFile(files[i], 'utf-8', (err, file)=>{
                     if(err)
                     {
-                        console.log(chalk.red('[File Open Error]'), chalk.white(strings[i]));
+                        console.log(chalk.red('[File Open Error]'), chalk.white(files[i]));
                     }
                     else
                     {
                         const newStrings = file.match(aggressiveMatcher);
                         if(newStrings)
                         {
-                            foundStrings = [...foundStrings, ...newStrings];
-                            
-                            if(globalFileId === currentFileId)
+                            for(let k = 0; k < newStrings.length; k++)
                             {
-                                resolve(foundStrings);
+                                foundStrings.push(newStrings[k]);
                             }
                         }
+                    }
+
+                    checkedFiles.push(files[i]);
+                    if(checkedFiles.length === files.length)
+                    {
+                        resolve(foundStrings);
                     }
                 });
             }
