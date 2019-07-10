@@ -84,11 +84,38 @@ class TranslationManager{
             const locals = await this.getLocals();
             const allStrings = await this.getStrings(this.templateFiles);
             const cleanStrings = await this.cleanStrings(allStrings);
-            await this.createFile(locals, cleanStrings);
+            const uniqueStrings = await this.purgeDuplicates(cleanStrings);
+            await this.createFile(locals, uniqueStrings);
         }catch(error){
             spinner.fail();
             throw error;
         }
+    }
+
+    purgeDuplicates(strings)
+    {
+        const uniqueStrings = [];
+        return new Promise((resolve)=>{
+            for(let i = 0; i < strings.length; i++)
+            {
+                let isUnique = true;
+                for(let k = 0; k <= uniqueStrings.length; k++)
+                {
+                    if(strings[i] === uniqueStrings[k])
+                    {
+                        isUnique = false;
+                        break;
+                    }
+                }
+
+                if(isUnique)
+                {
+                    uniqueStrings.push(strings[i]);
+                }
+            }
+
+            resolve(uniqueStrings);
+        });
     }
 
     getLocals()
@@ -154,12 +181,10 @@ class TranslationManager{
 
     cleanStrings(strings){
         const cleanedStrings = [];
-        let stringId = 0;
+        const reviewedStrings = [];
         return new Promise((resolve)=>{
             for(let i = 0; i < strings.length; i++)
             {
-                stringId++;
-                const currentStringId = stringId;
                 const translationString = strings[i].match(passiveMatcher);
                 if(translationString)
                 {
@@ -168,11 +193,12 @@ class TranslationManager{
                     cleanString = cleanString.replace(/["']$/gm, '');
                     cleanString = cleanString.replace(/\"/g, '\\"'); 
                     cleanedStrings.push(cleanString);
+                }
 
-                    if(stringId === currentStringId)
-                    {
-                        resolve(cleanedStrings);
-                    }
+                reviewedStrings.push(strings[i]);
+                if(reviewedStrings.length === strings.length)
+                {
+                    resolve(cleanedStrings);
                 }
             }
         });
