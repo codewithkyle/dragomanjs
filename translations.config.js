@@ -160,10 +160,11 @@ class TranslationManager{
 
                             let cleanFile = file.toString();
                             cleanFile = cleanFile.replace(/\<\?php.*/g, '');
-                            cleanFile = cleanFile.replace(/.*\[/g, '');
+                            cleanFile = cleanFile.replace(/(return[\s]\[)/g, '');
                             cleanFile = cleanFile.replace(/.*\]\;/g, '');
-                            
-                            const strings = cleanFile.split(/,\n/g);
+                            cleanFile = cleanFile.trim();
+                            cleanFile = cleanFile.replace(/((,\n)|(,\s\n))/g, 'customSplitMessage1234');
+                            const strings = cleanFile.split(/customSplitMessage1234/g);
                             for(let k = 0; k < strings.length; k++)
                             {
                                 let cleanString = strings[k].trim();
