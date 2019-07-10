@@ -59,6 +59,8 @@ class TranslationManager{
     }
 
     removeDefault(){
+        let removed = 0;
+        const toBeRemoved = 2;
         return new Promise((resolve, reject)=>{
             fs.exists('translations/default.json', (exists)=>{
                 if(exists)
@@ -68,10 +70,48 @@ class TranslationManager{
                         {
                             reject(err);
                         }
-                        resolve();
+
+                        removed++;
+
+                        if(removed === toBeRemoved)
+                        {
+                            resolve();
+                        }
                     });
                 }
                 else
+                {
+                    removed++;
+                }
+
+                if(removed === toBeRemoved)
+                {
+                    resolve();
+                }
+            });
+            fs.exists('translations/default.csv', (exists)=>{
+                if(exists)
+                {
+                    fs.unlink('translations/default.csv', (err)=>{
+                        if(err)
+                        {
+                            reject(err);
+                        }
+
+                        removed++;
+
+                        if(removed === toBeRemoved)
+                        {
+                            resolve();
+                        }
+                    });
+                }
+                else
+                {
+                    removed++;
+                }
+
+                if(removed === toBeRemoved)
                 {
                     resolve();
                 }
@@ -221,7 +261,7 @@ class TranslationManager{
         return locals;
     }
 
-    createFile(defaultJson)
+    createJsonFile(defaultJson)
     {
         if(compressed)
         {
@@ -290,6 +330,93 @@ class TranslationManager{
                 spinner.succeed();
             });
         }
+    }
+
+    createCsvFile(defaultJson)
+    {
+        let content = '';
+        content += '"en-US",';
+
+        const numberOfLocals = Object.keys(defaultJson).length;
+        let currentLocal = 0;
+        for(const local of Object.keys(defaultJson))
+        {
+            currentLocal++;
+            content += `"${ local }"`;
+            if(currentLocal < numberOfLocals)
+            {
+                content += ',';
+            }
+            else
+            {
+                content += '\n';
+            }
+        }
+        
+        const allKeys = [];
+        for(const local of Object.keys(defaultJson))
+        {
+            for(const key of Object.keys(defaultJson[local]))
+            {
+                let escapedKey = key.replace(/\\\"/g, '""');
+                if(!allKeys.includes(escapedKey))
+                {
+                    allKeys.push(escapedKey);
+                }
+            }
+        }
+
+        for(let i = 0; i < allKeys.length; i++)
+        {
+            content += `"${ allKeys[i] }",`;
+
+            let currentLocal = 0;
+            for(const local of Object.keys(defaultJson))
+            {
+                currentLocal++;
+
+                let key = defaultJson[local][allKeys[i]];
+
+                if(key === undefined)
+                {
+                    content += '""';
+                }
+                else
+                {
+                    key = key.replace(/\\\"/g, '""');
+                    content += key;
+                }
+
+                if(currentLocal < numberOfLocals)
+                {
+                    content += ',';
+                }
+                else
+                {
+                    content += '\n';
+                }
+            }
+            
+        }
+
+        fs.writeFile('translations/default.csv', content, (err)=>{
+            if(err)
+            {
+                console.log(err);
+                spinner.text = 'Failed to write new file';
+                spinner.fail();
+                return;
+            }
+
+            spinner.text = 'New translation file was generated';
+            spinner.succeed();
+        });
+    }
+
+    createFile(defaultJson)
+    {
+        this.createJsonFile(defaultJson);
+        this.createCsvFile(defaultJson);
     }
 
     cleanStrings(strings){
