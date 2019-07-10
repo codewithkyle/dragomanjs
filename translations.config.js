@@ -2,7 +2,6 @@ const chalk = require('chalk');
 const ora = require('ora');
 const fs = require('fs');
 const glob = require("glob");
-const rimraf = require("rimraf");
 const spinner = ora();
 
 
