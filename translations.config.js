@@ -163,7 +163,7 @@ class TranslationManager{
                             cleanFile = cleanFile.replace(/.*\[/g, '');
                             cleanFile = cleanFile.replace(/.*\]\;/g, '');
                             
-                            const strings = cleanFile.split(/,/g);
+                            const strings = cleanFile.split(/,\n/g);
                             for(let k = 0; k < strings.length; k++)
                             {
                                 let cleanString = strings[k].trim();
@@ -376,14 +376,10 @@ class TranslationManager{
 
                 let key = defaultJson[local][allKeys[i]];
 
-                if(key === undefined)
-                {
-                    content += '""';
-                }
-                else
+                if(key !== undefined && key !== '')
                 {
                     key = key.replace(/\\\"/g, '""');
-                    content += key;
+                    content += `"${ key }"`;
                 }
 
                 if(currentLocal < numberOfLocals)
