@@ -81,29 +81,58 @@ class TranslationManager{
         try{
             await this.validate();
             await this.removeDefault();
+            const locals = await this.getLocals();
             const allStrings = await this.getStrings(this.templateFiles);
             const cleanStrings = await this.cleanStrings(allStrings);
-            await this.createFile(cleanStrings);
+            await this.createFile(locals, cleanStrings);
         }catch(error){
             spinner.fail();
             throw error;
         }
     }
 
-    createFile(strings)
+    getLocals()
+    {
+        const localDirectories = glob.sync('translations/*');
+        const locals = [];
+
+        for(let i = 0; i < localDirectories.length; i++)
+        {
+            const cleanedString = localDirectories[i].replace(/.*\//, '');
+            locals.push(cleanedString);
+        }
+
+        return locals;
+    }
+
+    createFile(locals, strings)
     {
         let content = '{\n';
 
-        for(let i = 0; i < strings.length; i++)
+        for(let k = 0; k < locals.length; k++)
         {
-            content += `\t"${ strings[i] }": ""`;
-            if(i < strings.length - 1)
+            content += `\t"${ locals[k] }": {\n`;
+
+            for(let i = 0; i < strings.length; i++)
             {
-                content += ',\n';
+                content += `\t\t"${ strings[i] }": ""`;
+                if(i < strings.length - 1)
+                {
+                    content += ',\n';
+                }
+                else
+                {
+                    content += '\n';
+                }
+            }
+            
+            if(k < locals.length - 1)
+            {
+                content += `\t},\n`;
             }
             else
             {
-                content += '\n';
+                content += `\t}\n`;
             }
         }
 
