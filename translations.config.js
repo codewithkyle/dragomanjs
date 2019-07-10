@@ -278,7 +278,7 @@ class TranslationManager{
                     return;
                 }
     
-                spinner.text = 'New translation file was generated';
+                spinner.text = 'New JSON translation file was generated';
                 spinner.succeed();
             });
         }
@@ -337,7 +337,7 @@ class TranslationManager{
                     return;
                 }
     
-                spinner.text = 'New translation file was generated';
+                spinner.text = 'New JSON translation file was generated';
                 spinner.succeed();
             });
         }
@@ -415,7 +415,7 @@ class TranslationManager{
                 return;
             }
 
-            spinner.text = 'New translation file was generated';
+            spinner.text = 'New CSV translation file was generated';
             spinner.succeed();
         });
     }
