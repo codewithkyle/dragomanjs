@@ -163,7 +163,7 @@ class TranslationManager{
                             cleanFile = cleanFile.replace(/(return[\s]\[)/g, '');
                             cleanFile = cleanFile.replace(/.*\]\;/g, '');
                             cleanFile = cleanFile.trim();
-                            cleanFile = cleanFile.replace(/((,\n)|(,\s\n))/g, 'customSplitMessage1234');
+                            cleanFile = cleanFile.replace(/(,\n)|(,\s\n)|([,]$)/g, 'customSplitMessage1234');
                             const strings = cleanFile.split(/customSplitMessage1234/g);
                             for(let k = 0; k < strings.length; k++)
                             {
@@ -173,13 +173,16 @@ class TranslationManager{
                                 if(slicedPairs[1].length > 2)
                                 {
                                     let key = slicedPairs[0];
-                                    key = key.replace(/^[']/, '');
-                                    key = key.replace(/[']$/, '');
+                                    key = key.replace(/^['"]/, '');
+                                    key = key.replace(/['"]$/, '');
+                                    key = JSON.stringify(key);
 
                                     let value = slicedPairs[1];
-                                    value = value.replace(/^[']/, '');
-                                    value = value.replace(/[']$/, '');
-                                    emptyDefaultJson[locals[i]][key] = value;
+                                    value = value.replace(/^['"]/, '');
+                                    value = value.replace(/['"]$/, '');
+                                    value = JSON.stringify(value);
+
+                                    emptyDefaultJson[locals[i]][`${ key }`] = value;
                                 }
                             }
 
@@ -212,7 +215,8 @@ class TranslationManager{
                 let newLocal = {};
                 for(let i = 0; i < strings.length; i++)
                 {
-                    newLocal[strings[i]] = '';
+                    const key =  JSON.stringify(strings[i]);
+                    newLocal[key] = "";
                 }
 
                 emptyDefaultJson[locals[k]] = newLocal;
@@ -265,7 +269,7 @@ class TranslationManager{
     {
         if(compressed)
         {
-            fs.writeFile('translations/default.json', JSON.stringify(defaultJson), (err)=>{
+            fs.writeFile('translations/default.json', defaultJson, (err)=>{
                 if(err)
                 {
                     console.log(err);
@@ -293,7 +297,14 @@ class TranslationManager{
                 for(const [key, value] of Object.entries(defaultJson[local]))
                 {
                     currentKey++;
-                    content += `\t\t"${ key }": "${ value }"`;
+                    if(value.length > 0)
+                    {
+                        content += `\t\t${ key }: ${ value }`;
+                    }
+                    else
+                    {
+                        content += `\t\t${ key }: ""`;
+                    }
 
                     if(currentKey < numberOfKeys)
                     {
@@ -358,7 +369,7 @@ class TranslationManager{
         {
             for(const key of Object.keys(defaultJson[local]))
             {
-                let escapedKey = key.replace(/\\\"/g, '""');
+                let escapedKey = key.replace(/\\"/g, '""');
                 if(!allKeys.includes(escapedKey))
                 {
                     allKeys.push(escapedKey);
@@ -368,7 +379,7 @@ class TranslationManager{
 
         for(let i = 0; i < allKeys.length; i++)
         {
-            content += `"${ allKeys[i] }",`;
+            content += `${ allKeys[i] },`;
 
             let currentLocal = 0;
             for(const local of Object.keys(defaultJson))
@@ -379,8 +390,8 @@ class TranslationManager{
 
                 if(key !== undefined && key !== '')
                 {
-                    key = key.replace(/\\\"/g, '""');
-                    content += `"${ key }"`;
+                    key = key.replace(/\\"/g, '""');
+                    content += `${ key }`;
                 }
 
                 if(currentLocal < numberOfLocals)
