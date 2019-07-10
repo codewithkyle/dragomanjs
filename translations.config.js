@@ -14,6 +14,7 @@ const passiveMatcher = /(["'].*?["']\|t)/g;
 
 const baseDirectory = 'templates';
 const fileType = 'twig';
+const compressed = false;
 
 class TranslationManager{
     constructor()
@@ -89,8 +90,7 @@ class TranslationManager{
             const uniqueStrings = await this.purgeDuplicates(cleanStrings); 
             const emptyDefaultJson = await this.createDefaultJson(locals, uniqueStrings);
             const prefilledDefaultJson = await this.fillDefaultJson(emptyDefaultJson, locals);
-            console.log(prefilledDefaultJson);
-            await this.createFile(locals, uniqueStrings);
+            await this.createFile(prefilledDefaultJson);
         }catch(error){
             spinner.fail();
             throw error;
@@ -132,7 +132,14 @@ class TranslationManager{
                                 
                                 if(slicedPairs[1].length > 2)
                                 {
-                                    emptyDefaultJson[locals[i]][slicedPairs[0]] = slicedPairs[1];
+                                    let key = slicedPairs[0];
+                                    key = key.replace(/^[']/, '');
+                                    key = key.replace(/[']$/, '');
+
+                                    let value = slicedPairs[1];
+                                    value = value.replace(/^[']/, '');
+                                    value = value.replace(/[']$/, '');
+                                    emptyDefaultJson[locals[i]][key] = value;
                                 }
                             }
 
@@ -214,51 +221,75 @@ class TranslationManager{
         return locals;
     }
 
-    createFile(locals, strings)
+    createFile(defaultJson)
     {
-        let content = '{\n';
-
-        for(let k = 0; k < locals.length; k++)
+        if(compressed)
         {
-            content += `\t"${ locals[k] }": {\n`;
-
-            for(let i = 0; i < strings.length; i++)
-            {
-                content += `\t\t"${ strings[i] }": ""`;
-                if(i < strings.length - 1)
+            fs.writeFile('translations/default.json', JSON.stringify(defaultJson), (err)=>{
+                if(err)
                 {
-                    content += ',\n';
+                    console.log(err);
+                    spinner.text = 'Failed to write new file';
+                    spinner.fail();
+                    return;
+                }
+    
+                spinner.text = 'New translation file was generated';
+                spinner.succeed();
+            });
+        }
+        else
+        {
+            let content = '{\n';
+            const numberOfLocals = Object.keys(defaultJson).length;
+            let currentLocal = 0;
+            for(const local of Object.keys(defaultJson))
+            {
+                currentLocal++;
+                content += `\t"${ local }": {\n`;
+
+                const numberOfKeys = Object.entries(defaultJson[local]).length;
+                let currentKey = 0;
+                for(const [key, value] of Object.entries(defaultJson[local]))
+                {
+                    currentKey++;
+                    content += `\t\t"${ key }": "${ value }"`;
+
+                    if(currentKey < numberOfKeys)
+                    {
+                        content += ',\n';
+                    }
+                    else
+                    {
+                        content += '\n';
+                    }
+                }
+
+                if(currentLocal < numberOfLocals)
+                {
+                    content += `\t},\n`;
                 }
                 else
                 {
-                    content += '\n';
+                    content += `\t}\n`;
                 }
             }
-            
-            if(k < locals.length - 1)
-            {
-                content += `\t},\n`;
-            }
-            else
-            {
-                content += `\t}\n`;
-            }
+
+            content += '}\n';
+
+            fs.writeFile('translations/default.json', content, (err)=>{
+                if(err)
+                {
+                    console.log(err);
+                    spinner.text = 'Failed to write new file';
+                    spinner.fail();
+                    return;
+                }
+    
+                spinner.text = 'New translation file was generated';
+                spinner.succeed();
+            });
         }
-
-        content += '}\n';
-
-        fs.writeFile('translations/default.json', content, (err)=>{
-            if(err)
-            {
-                console.log(err);
-                spinner.text = 'Failed to write new file';
-                spinner.fail();
-                return;
-            }
-
-            spinner.text = 'New translation file was generated';
-            spinner.succeed();
-        });
     }
 
     cleanStrings(strings){
