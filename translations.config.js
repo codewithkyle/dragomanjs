@@ -3,11 +3,8 @@ const ora = require('ora');
 const fs = require('fs');
 const glob = require("glob");
 const rimraf = require("rimraf");
-
-console.log(chalk.cyan('Starting the translation fetcher file generator'));
 const spinner = ora();
-spinner.start();
-spinner.text = 'Collecting files';
+
 
 /** Matches anything between double curly brackets */
 const aggressiveMatcher = /(\{\{|\{\{\s).*?(\}\}|\s\}\})/g;
@@ -21,7 +18,12 @@ const fileType = 'twig';
 class TranslationManager{
     constructor()
     {
+        console.log(chalk.cyan('Starting the translation file generator'));
+        spinner.start();
+        spinner.text = 'Collecting files';
+
         this.templateFiles = glob.sync(`${ baseDirectory }/**/*.${ fileType }`);
+
         if(this.templateFiles.length)
         {
             this.init();
@@ -77,19 +79,99 @@ class TranslationManager{
     }
 
     async init()
-    {
+    {        
         try{
             await this.validate();
             await this.removeDefault();
             const locals = await this.getLocals();
             const allStrings = await this.getStrings(this.templateFiles);
             const cleanStrings = await this.cleanStrings(allStrings);
-            const uniqueStrings = await this.purgeDuplicates(cleanStrings);
+            const uniqueStrings = await this.purgeDuplicates(cleanStrings); 
+            const emptyDefaultJson = await this.createDefaultJson(locals, uniqueStrings);
+            const prefilledDefaultJson = await this.fillDefaultJson(emptyDefaultJson, locals);
+            console.log(prefilledDefaultJson);
             await this.createFile(locals, uniqueStrings);
         }catch(error){
             spinner.fail();
             throw error;
         }
+    }
+
+    fillDefaultJson(emptyDefaultJson, locals)
+    {
+        let count = locals.length;
+        let resolvedLocals = 0;
+        return new Promise((resolve)=>{
+            for(let i = 0; i < locals.length; i++)
+            {
+                fs.exists(`translations/${ locals[i] }/site.php`, (exists)=>{
+                    if(exists)
+                    {
+                        fs.readFile(`translations/${ locals[i] }/site.php`, (err,file)=>{
+                            if(err)
+                            {
+                                console.log(chalk.red('[File Read Error]'), err);
+                                resolvedLocals++;
+                                if(resolvedLocals === count)
+                                {
+                                    resolve(emptyDefaultJson);
+                                }
+                                return;
+                            }
+
+                            let cleanFile = file.toString();
+                            cleanFile = cleanFile.replace(/\<\?php.*/g, '');
+                            cleanFile = cleanFile.replace(/.*\[/g, '');
+                            cleanFile = cleanFile.replace(/.*\]\;/g, '');
+                            
+                            const strings = cleanFile.split(/,/g);
+                            for(let k = 0; k < strings.length; k++)
+                            {
+                                let cleanString = strings[k].trim();
+                                const slicedPairs = cleanString.split(/\s*\=\>\s*/g);
+                                
+                                if(slicedPairs[1].length > 2)
+                                {
+                                    emptyDefaultJson[locals[i]][slicedPairs[0]] = slicedPairs[1];
+                                }
+                            }
+
+                            resolvedLocals++;
+                            if(resolvedLocals === count)
+                            {
+                                resolve(emptyDefaultJson);
+                            }
+                        });
+                    }
+                    else
+                    {
+                        resolvedLocals++;
+                        if(resolvedLocals === count)
+                        {
+                            resolve(emptyDefaultJson);
+                        }
+                    }
+                });
+            }
+        });
+    }
+
+    createDefaultJson(locals, strings)
+    {
+        let emptyDefaultJson = {};
+        return new Promise((resolve)=>{
+            for(let k = 0; k < locals.length; k++)
+            {
+                let newLocal = {};
+                for(let i = 0; i < strings.length; i++)
+                {
+                    newLocal[strings[i]] = '';
+                }
+
+                emptyDefaultJson[locals[k]] = newLocal;
+            }
+            resolve(emptyDefaultJson);
+        });
     }
 
     purgeDuplicates(strings)
