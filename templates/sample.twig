@@ -3,4 +3,6 @@
     {{ "another test string"|t }}
     {{ 'so many test'|t }} {{"all so nicely put together"|t}}
     {{ "what luck"|t}}{{"what grace"|t }}
+    {{ 'Welcome to the string party {name}'|t(params={ 'name' => user.name }) }}
+    {{ "I'm turning {age}"|t(params={ 'age' => user.age }) }}
 </div>

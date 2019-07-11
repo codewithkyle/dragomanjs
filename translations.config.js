@@ -13,7 +13,6 @@ const passiveMatcher = /(["'].*?["']\|t)/g;
 
 const baseDirectory = 'templates';
 const fileType = 'twig';
-const compressed = false;
 
 class TranslationManager{
     constructor()
@@ -267,80 +266,62 @@ class TranslationManager{
 
     createJsonFile(defaultJson)
     {
-        if(compressed)
+        let content = '{\n';
+        const numberOfLocals = Object.keys(defaultJson).length;
+        let currentLocal = 0;
+        for(const local of Object.keys(defaultJson))
         {
-            fs.writeFile('translations/default.json', defaultJson, (err)=>{
-                if(err)
-                {
-                    console.log(err);
-                    spinner.text = 'Failed to write new file';
-                    spinner.fail();
-                    return;
-                }
-    
-                spinner.text = 'New JSON translation file was generated';
-                spinner.succeed();
-            });
-        }
-        else
-        {
-            let content = '{\n';
-            const numberOfLocals = Object.keys(defaultJson).length;
-            let currentLocal = 0;
-            for(const local of Object.keys(defaultJson))
+            currentLocal++;
+            content += `\t"${ local }": {\n`;
+
+            const numberOfKeys = Object.entries(defaultJson[local]).length;
+            let currentKey = 0;
+            for(const [key, value] of Object.entries(defaultJson[local]))
             {
-                currentLocal++;
-                content += `\t"${ local }": {\n`;
-
-                const numberOfKeys = Object.entries(defaultJson[local]).length;
-                let currentKey = 0;
-                for(const [key, value] of Object.entries(defaultJson[local]))
+                currentKey++;
+                if(value.length > 0)
                 {
-                    currentKey++;
-                    if(value.length > 0)
-                    {
-                        content += `\t\t${ key }: ${ value }`;
-                    }
-                    else
-                    {
-                        content += `\t\t${ key }: ""`;
-                    }
-
-                    if(currentKey < numberOfKeys)
-                    {
-                        content += ',\n';
-                    }
-                    else
-                    {
-                        content += '\n';
-                    }
-                }
-
-                if(currentLocal < numberOfLocals)
-                {
-                    content += `\t},\n`;
+                    content += `\t\t${ key }: ${ value }`;
                 }
                 else
                 {
-                    content += `\t}\n`;
+                    content += `\t\t${ key }: ""`;
+                }
+
+                if(currentKey < numberOfKeys)
+                {
+                    content += ',\n';
+                }
+                else
+                {
+                    content += '\n';
                 }
             }
 
-            content += '}\n';
-
-            fs.writeFile('translations/default.json', content, (err)=>{
-                if(err)
-                {
-                    console.log(err);
-                    spinner.text = 'Failed to write new file';
-                    spinner.fail();
-                    return;
-                }
-    
-                spinner.text = 'New JSON translation file was generated';
-                spinner.succeed();
-            });
+            if(currentLocal < numberOfLocals)
+            {
+                content += `\t},\n`;
+            }
+            else
+            {
+                content += `\t}\n`;
+            }
         }
+
+        content += '}\n';
+
+        fs.writeFile('translations/default.json', content, (err)=>{
+            if(err)
+            {
+                console.log(err);
+                spinner.text = 'Failed to write new file';
+                spinner.fail();
+                return;
+            }
+
+            spinner.text = 'New JSON translation file was generated';
+            spinner.succeed();
+        });
     }
 
     createCsvFile(defaultJson)
