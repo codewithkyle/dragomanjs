@@ -1,10 +1,10 @@
 {
-  "name": "translation-service",
-  "version": "0.0.1",
+  "name": "craft-translation-service",
+  "version": "0.1.0",
   "description": "",
   "main": "translations.config.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "cts": "node ./translations.config.js"
   },
   "repository": {
     "type": "git",
