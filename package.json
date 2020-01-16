@@ -18,7 +18,7 @@
   "homepage": "https://github.com/codewithkyle/translation-service#readme",
   "dependencies": {
     "chalk": "^2.4.2",
-    "glob": "^7.1.4",
+    "glob": "^7.1.6",
     "ora": "^3.4.0"
   }
 }
