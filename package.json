@@ -1,21 +1,21 @@
 {
-  "name": "craft-translation-service",
-  "version": "0.1.0",
+  "name": "dragomanjs",
+  "version": "0.0.1",
   "description": "",
   "main": "translations.config.js",
   "scripts": {
-    "cts": "node ./translations.config.js"
+    "dragoman": "node ./translations.config.js"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/codewithkyle/translation-service.git"
+    "url": "git+https://github.com/codewithkyle/dragomanjs.git"
   },
   "author": "Kyle Andrews",
-  "license": "MIT",
+  "license": "GPL-3",
   "bugs": {
-    "url": "https://github.com/codewithkyle/translation-service/issues"
+    "url": "https://github.com/codewithkyle/dragomanjs/issues"
   },
-  "homepage": "https://github.com/codewithkyle/translation-service#readme",
+  "homepage": "https://github.com/codewithkyle/dragomanjs#readme",
   "dependencies": {
     "chalk": "^2.4.2",
     "glob": "^7.1.6",
