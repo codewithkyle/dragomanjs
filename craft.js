@@ -10,7 +10,7 @@ const aggressiveMatcher = new RegExp(/(\{\{|\{\{\s).*?(\}\}|\s\}\})/, "g");
 /** Matches anything between single or double quotes that end with a |t */
 const passiveMatcher = new RegExp(/(["'].*?["']\|t)/, "g");
 
-export class Craft {
+class Craft {
     constructor(config) {
         this.config = config;
         this.tempDir = null;
@@ -64,7 +64,10 @@ export class Craft {
             for (let i = 0; i < rawStrings.length; i++) {
                 const translationString = rawStrings[i].match(passiveMatcher);
                 if (translationString) {
-                    const cleanString = translationString[0].replace(/(\|t)/g, "").replace(/^["']|["']$/gm, "");
+                    const cleanString = translationString[0]
+                        .replace(/(\|t)/g, "")
+                        .replace(/^["']|["']$/gm, "")
+                        .trim();
                     cleanedStrings.push(cleanString);
                 }
             }
@@ -158,3 +161,4 @@ export class Craft {
         }
     }
 }
+module.exports = Craft;

@@ -86,7 +86,7 @@ class Dragoman {
                     .replace(/return\s+\[/g, "")
                     .replace(/\s+\]\;/g, "")
                     .trim();
-                const pairs = data.split(/(,\n)|(,\s+\n)|([,])$/g);
+                const pairs = data.replace(/(,\n)|(,\s+\n)|([,])$/g, "customSplitterValue").split("customSplitterValue");
                 for (let i = 0; i < pairs.length; i++) {
                     const pair = pairs[i].split(/\=\>/);
                     const key = pair[0]
@@ -135,10 +135,101 @@ class Dragoman {
         });
     }
 
+    populateKeys(uniqueKeys) {
+        return new Promise(resolve => {
+            for (let local in this.translations) {
+                for (let i = 0; i < uniqueKeys.length; i++) {
+                    this.translations[local][uniqueKeys[i]] = this.translations[local][uniqueKeys[i]] || "";
+                }
+            }
+            resolve();
+        });
+    }
+
+    addNewLocals() {
+        return new Promise(resolve => {
+            for (let i = 0; i < config.locals.length; i++) {
+                if (typeof this.translations[config.locals[i]] === "undefined") {
+                    this.translations[config.locals[i]] = {};
+                }
+            }
+            resolve();
+        });
+    }
+
+    generateCSV() {
+        return new Promise((resolve, reject) => {
+            const output = path.join(cwd, "translations.csv");
+            if (fs.existsSync(output)) {
+                fs.unlinkSync(output);
+            }
+
+            let data = "";
+            data += '"base",';
+            const numberOfLocals = Object.keys(this.translations).length;
+            let currentLocal = 0;
+            for (const local of Object.keys(this.translations)) {
+                currentLocal++;
+                data += `"${local}"`;
+                if (currentLocal < numberOfLocals) {
+                    data += ",";
+                } else {
+                    data += "\n";
+                }
+            }
+
+            const allKeys = [];
+            for (const local of Object.keys(this.translations)) {
+                for (const key of Object.keys(this.translations[local])) {
+                    let escapedKey = key.replace(/\"/g, '""');
+                    if (!allKeys.includes(escapedKey)) {
+                        allKeys.push(escapedKey);
+                    }
+                }
+            }
+
+            for (let i = 0; i < allKeys.length; i++) {
+                data += `"${allKeys[i]}",`;
+                let currentLocal = 0;
+                for (const local of Object.keys(this.translations)) {
+                    currentLocal++;
+                    let key = this.translations[local][allKeys[i]];
+                    if (key !== undefined && key !== "") {
+                        key = key.replace(/\"/g, '""');
+                        data += `"${key}"`;
+                    }
+                    if (currentLocal < numberOfLocals) {
+                        data += ",";
+                    } else {
+                        data += "\n";
+                    }
+                }
+            }
+            fs.writeFile(output, data, error => {
+                if (error) {
+                    reject(error);
+                }
+                resolve();
+            });
+        });
+    }
+
+    cleanup() {
+        return new Promise((resolve, reject) => {
+            const tempDir = path.join(__dirname, "temp");
+            fs.rmdir(tempDir, { recursive: true }, error => {
+                if (error) {
+                    reject(error);
+                }
+                resolve();
+            });
+        });
+    }
+
     async run() {
         try {
             let collector;
-            switch (config.project) {
+            switch (config.project.toLowerCase().trim()) {
                 case "craft":
                     const Tool = require(path.join(__dirname, "craft.js"));
                     collector = new Tool(config);
@@ -148,6 +239,11 @@ class Dragoman {
             }
             const collectedKeys = await collector.run();
             await this.constructInitialObject();
+            await this.addNewLocals();
+            await this.populateKeys(collectedKeys);
+            await this.generateCSV();
+            await this.cleanup();
+            process.exit(0);
         } catch (error) {
             console.log(error);
             console.log("\n");
