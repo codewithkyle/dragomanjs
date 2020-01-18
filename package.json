@@ -1,11 +1,8 @@
 {
   "name": "dragomanjs",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "description": "",
-  "main": "translations.config.js",
-  "scripts": {
-    "dragoman": "node ./translations.config.js"
-  },
+  "main": "cli.js",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/codewithkyle/dragomanjs.git"
@@ -17,8 +14,19 @@
   },
   "homepage": "https://github.com/codewithkyle/dragomanjs#readme",
   "dependencies": {
-    "chalk": "^2.4.2",
     "glob": "^7.1.6",
-    "ora": "^3.4.0"
-  }
+    "ora": "^3.4.0",
+    "semver": "^7.1.1",
+    "yargs": "^15.1.0"
+  },
+  "bin": {
+    "dragoman": "./cli.js"
+  },
+  "engines": {
+    "node": ">=12.10.0"
+  },
+  "files": [
+    "cli.js"
+  ],
+  "devDependencies": {}
 }
