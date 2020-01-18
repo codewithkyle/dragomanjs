@@ -40,7 +40,7 @@ Dragoman requires a `dragoman.js` or `dragoman.config.js` configuration file loc
 
 ```javascript
 module.exports = {
-    project: "craft", // supports 'craft' or 'symfony' or 'blade'
+    project: "craft", // currently supports 'craft'
     locals: ["es-MX", "jp-JA", "ca-FR", "ko-KR"], // must be an array of strings
     content: "./templates", // can be an array of template directories
 };
@@ -49,3 +49,8 @@ module.exports = {
 ## Translating Strings
 
 When the `dragoman` command runs all translatable strings will be parsed from the provided content directories and used to generate a `translations.csv` file. The file can be imported into applications such as Numbers, Excel, Google Sheets, or OpenOffice Calc.
+
+## Roadmap
+
+-   0.2: Symfony
+-   0.3: Blade
