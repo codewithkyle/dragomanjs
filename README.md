@@ -52,5 +52,5 @@ When the `dragoman` command runs all translatable strings will be parsed from th
 
 ## Roadmap
 
--   0.2: Symfony
--   0.3: Blade
+-   **0.2:** Symfony support
+-   **0.3:** Blade support
