@@ -25,13 +25,13 @@ module.exports = {
 Setup an NPM script to run the CLI:
 
 ```json
-"translate": "dragoman"
+"translate:create": "dragoman"
 ```
 
 Run the NPM script:
 
 ```bash
-npm run translate
+npm run translate:create
 ```
 
 ## Configuration
@@ -49,6 +49,14 @@ module.exports = {
 ## Translating Strings
 
 When the `dragoman` command runs all translatable strings will be parsed from the provided content directories and used to generate a `translations.csv` file. The file can be imported into applications such as Numbers, Excel, Google Sheets, or OpenOffice Calc.
+
+To convert the CSV file into JSON and PHP use the `--input` flag.
+
+```json
+"translate:convert": "dragoman --input ./translations.csv"
+```
+
+The files will be placed in a `dragoman` directory at your project root. Each local will be split into their own directory with a `site.php` and `site.json` file per local.
 
 ## Roadmap
 

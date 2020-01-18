@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 -   new CLI based translator
 -   support for `craft` projects
 -   outputs `translations.csv` file
+-   accepts `.csv` file and converts to `.json` and `.php` per local using `--input` flag
 
 ## [0.0.1] - 2020-01-16
 
