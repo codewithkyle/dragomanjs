@@ -16,9 +16,9 @@ Create a `dragoman.config.js` config file:
 
 ```javascript
 module.exports = {
-    project: "craft",
-    lang: ["es-MX", "jp-JA", "ca-FR", "ko-KR"],
-    content: "./templates",
+    syntax: "twig", // currently supports 'twig'
+    lang: ["es-MX", "jp-JA", "ca-FR", "ko-KR"], // must be an array of strings
+    content: "./templates", // can be an array of template directories
     output: "./translations",
 };
 ```
@@ -33,17 +33,4 @@ Run the NPM script:
 
 ```bash
 npm run translate
-```
-
-## Configuration
-
-Dragoman requires a `dragoman.config.js` configuration file located in the project's root directory. A custom config file location can be provided via the `--config` flag.
-
-```javascript
-module.exports = {
-    project: "craft", // currently supports 'craft'
-    lang: ["es-MX", "jp-JA", "ca-FR", "ko-KR"], // must be an array of strings
-    content: "./templates", // can be an array of template directories
-    output: "./translations",
-};
 ```

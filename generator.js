@@ -170,8 +170,16 @@ class Generator {
         try {
             await this.createTempDirectory();
             await this.createLangs();
-            const parser = require("./lib/craft");
-            const baseStrings = await parser(this.config);
+            let baseStrings = [];
+            switch (this.config.syntax){
+                case "twig":
+                    const twigParser = require("./lib/twig");
+                    baseStrings = await twigParser(this.config);
+                    break;
+                default:
+                    console.log(`Invalid syntax type: ${this.config.syntax}`);
+                    process.exit(1);
+            }
             this.prefillBaseStrings(baseStrings);
             const currentFiles = this.getCurrentTranslationFiles();
             await this.retainTranslations(currentFiles);

@@ -18,7 +18,7 @@ if (!semver.satisfies(process.version, version)) {
 
 /** Manage config file */
 let config = {
-    project: null,
+    syntax: null,
     lang: [],
     content: "./templates",
     output: "./translations"
@@ -31,13 +31,6 @@ if (!fs.existsSync(customConfigPath)){
 }
 const customConfig = require(customConfigPath);
 config = Object.assign(config, customConfig);
-switch (config.project){
-    case "craft":
-        break;
-    default:
-        console.log(`Invalid project type: ${config.project}`);
-        process.exit(1);
-}
 if (!Array.isArray(config.content)){
     config.content = [config.content];
 }
