@@ -1,4 +1,5 @@
 const fs = require("fs");
+const glob = require("glob");
 const path = require("path");
 
 const cwd = process.cwd();
@@ -8,6 +9,9 @@ class Generator {
         this.config = config;
         this.tempDir = path.resolve(__dirname, "temp");
         this.translations = {};
+        for (let i = 0; i < this.config.lang.length; i++){
+            this.translations[this.config.lang[i]] = {};
+        }
         this.run();
     }
 
@@ -85,37 +89,6 @@ class Generator {
         });
     }
 
-    generateJSONFiles() {
-        return new Promise((resolve, reject) => {
-            const numberOfLangs = Object.keys(this.translations).length;
-            let generated = 0;
-            for (const lang in this.translations) {
-                let data = "{\n";
-                let count = 0;
-                const numberOfKeys = Object.keys(this.translations[lang]).length;
-                for (const [key, value] of Object.entries(this.translations[lang])) {
-                    count++;
-                    data += `\t"${key.replace(/\"/g, '\\"')}": "${value.replace(/\"/g, '\\"')}"`;
-                    if (count < numberOfKeys) {
-                        data += ",\n";
-                    } else {
-                        data += "\n";
-                    }
-                }
-                data += "}\n";
-                fs.writeFile(path.join(this.tempDir, lang, "site.json"), data, error => {
-                    if (error) {
-                        reject(error);
-                    }
-                    generated++;
-                    if (generated === numberOfLangs) {
-                        resolve();
-                    }
-                });
-            }
-        });
-    }
-
     generateDeliveryDirectory() {
         return new Promise((resolve, reject) => {
             if (fs.existsSync(this.config.output)) {
@@ -138,7 +111,6 @@ class Generator {
                 for (const lang in this.translations) {
                     await fs.promises.mkdir(path.join(this.config.output, lang));
                     await fs.promises.copyFile(path.join(this.tempDir, lang, "site.php"), path.join(this.config.output, lang, "site.php"));
-                    await fs.promises.copyFile(path.join(this.tempDir, lang, "site.json"), path.join(this.config.output, lang, "site.json"));
                     copied++;
                     if (copied === numberOfLangs) {
                         resolve();
@@ -165,13 +137,45 @@ class Generator {
         });
     }
 
+    prefillBaseStrings(strings) {
+        for (const lang in this.translations){
+            for (let i = 0; i < strings.length; i++){
+                this.translations[lang][strings[i]] = "";
+            }   
+        }
+    }
+
+    getCurrentTranslationFiles(){
+        return glob.sync(`${this.config.output}/**/*.php`);
+    }
+
+    retainTranslations(currentFiles){
+        return new Promise( async (resolve) => {
+            for (const file of currentFiles){
+                const lang = file.replace(/.*(translations)[\\\/]/g, "").split(/[\\\/]/)[0];
+                let data = await fs.promises.readFile(file, "utf-8");
+                data = data.split(",");
+                for (const line of data){
+                    const values = line.split("=>");
+                    const key = values[0].match(/[\"\'].*[\'\"]/g)[0].replace(/^[\'\"]|[\'\"]$/g, "");
+                    const value = values[1].match(/[\"\'].*[\'\"]/g)[0].replace(/^[\'\"]|[\'\"]$/g, "");
+                    this.translations[lang][key] = value;
+                }
+            }
+            resolve();
+        });
+    }
+
     async run() {
         try {
             await this.createTempDirectory();
-            delete this.translations["base"];
             await this.createLangs();
+            const parser = require("./lib/craft");
+            const baseStrings = await parser(this.config);
+            this.prefillBaseStrings(baseStrings);
+            const currentFiles = this.getCurrentTranslationFiles();
+            await this.retainTranslations(currentFiles);
             await this.generatePHPFiles();
-            await this.generateJSONFiles();
             await this.generateDeliveryDirectory();
             await this.deliverFiles();
             await this.cleanup();

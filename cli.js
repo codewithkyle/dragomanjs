@@ -31,6 +31,13 @@ if (!fs.existsSync(customConfigPath)){
 }
 const customConfig = require(customConfigPath);
 config = Object.assign(config, customConfig);
+switch (config.project){
+    case "craft":
+        break;
+    default:
+        console.log(`Invalid project type: ${config.project}`);
+        process.exit(1);
+}
 if (!Array.isArray(config.content)){
     config.content = [config.content];
 }
@@ -38,6 +45,13 @@ for (let i = 0; i < config.content.length; i++){
     config.content[i] = path.resolve(cwd, config.content[i]);
 }
 config.output = path.resolve(cwd, config.output);
+if (!Array.isArray(config.lang)){
+    console.log(`Invalid config setting. 'lang' must be an array of strings.`);
+    process.exit(1);
+} else if (!config.lang.length){
+    console.log(`Invalid config setting. 'lang' array cannot be empty.`);
+    process.exit(1);
+}
 
 const Generator = require("./generator");
 new Generator(config);
