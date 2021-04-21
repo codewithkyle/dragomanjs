@@ -27,8 +27,7 @@
     },
     "files": [
         "cli.js",
-        "csv-generator.js",
-        "php-generator.js",
+        "generator.js",
         "lib"
     ]
 }
