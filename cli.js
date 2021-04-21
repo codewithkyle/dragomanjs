@@ -3,6 +3,7 @@
 const path = require("path");
 const semver = require("semver");
 const yargs = require("yargs").argv;
+const fs = require("fs");
 
 const cwd = process.cwd();
 
@@ -15,11 +16,28 @@ if (!semver.satisfies(process.version, version)) {
     process.exit(1);
 }
 
-const input = yargs.input || null;
-if (input) {
-    const Generator = require("./php-generator");
-    new Generator(input);
-} else {
-    const Generator = require("./csv-generator");
-    new Generator();
+/** Manage config file */
+let config = {
+    project: null,
+    lang: [],
+    content: "./templates",
+    output: "./translations"
+};
+let customConfigPath = yargs.config || "dragoman.config.js";
+customConfigPath = path.join(cwd, customConfigPath);
+if (!fs.existsSync(customConfigPath)){
+    console.log(`Failed to find config file at ${customConfigPath}`);
+    process.exit(1);
 }
+const customConfig = require(customConfigPath);
+config = Object.assign(config, customConfig);
+if (!Array.isArray(config.content)){
+    config.content = [config.content];
+}
+for (let i = 0; i < config.content.length; i++){
+    config.content[i] = path.resolve(cwd, config.content[i]);
+}
+config.output = path.resolve(cwd, config.output);
+
+const Generator = require("./generator");
+new Generator(config);

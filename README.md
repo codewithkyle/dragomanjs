@@ -36,7 +36,7 @@ npm run translate:create
 
 ## Configuration
 
-Dragoman requires a `dragoman.js` or `dragoman.config.js` configuration file located in the project's root directory. A custom config file location can be provided via the `--config` flag.
+Dragoman requires a `dragoman.config.js` configuration file located in the project's root directory. A custom config file location can be provided via the `--config` flag.
 
 ```javascript
 module.exports = {
