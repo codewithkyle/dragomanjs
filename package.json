@@ -1,6 +1,6 @@
 {
     "name": "dragomanjs",
-    "version": "0.1.0",
+    "version": "0.2.0",
     "description": "",
     "main": "cli.js",
     "repository": {
@@ -8,7 +8,7 @@
         "url": "git+https://github.com/codewithkyle/dragomanjs.git"
     },
     "author": "Kyle Andrews",
-    "license": "GPL-3.0",
+    "license": "MIT",
     "bugs": {
         "url": "https://github.com/codewithkyle/dragomanjs/issues"
     },
@@ -16,8 +16,8 @@
     "dependencies": {
         "glob": "^7.1.6",
         "ora": "^3.4.0",
-        "semver": "^7.1.1",
-        "yargs": "^15.1.0"
+        "semver": "^7.3.5",
+        "yargs": "^15.4.1"
     },
     "bin": {
         "dragoman": "./cli.js"
@@ -30,6 +30,5 @@
         "csv-generator.js",
         "php-generator.js",
         "lib"
-    ],
-    "devDependencies": {}
+    ]
 }

@@ -17,7 +17,7 @@ Create a `dragoman.config.js` config file:
 ```javascript
 module.exports = {
     project: "craft",
-    locals: ["es-MX", "jp-JA", "ca-FR", "ko-KR"],
+    lang: ["es-MX", "jp-JA", "ca-FR", "ko-KR"],
     content: "./templates",
 };
 ```
@@ -41,7 +41,7 @@ Dragoman requires a `dragoman.js` or `dragoman.config.js` configuration file loc
 ```javascript
 module.exports = {
     project: "craft", // currently supports 'craft'
-    locals: ["es-MX", "jp-JA", "ca-FR", "ko-KR"], // must be an array of strings
+    lang: ["es-MX", "jp-JA", "ca-FR", "ko-KR"], // must be an array of strings
     content: "./templates", // can be an array of template directories
 };
 ```
@@ -56,7 +56,7 @@ To convert the CSV file into JSON and PHP use the `--input` flag.
 "translate:convert": "dragoman --input ./translations.csv"
 ```
 
-The files will be placed in a `dragoman` directory at your project root. Each local will be split into their own directory with a `site.php` and `site.json` file per local.
+The files will be placed in a `dragoman` directory at your project root. Each language will be split into their own directory with a `site.php` and `site.json`.
 
 ## Roadmap
 
