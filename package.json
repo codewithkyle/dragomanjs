@@ -15,7 +15,6 @@
     "homepage": "https://github.com/codewithkyle/dragomanjs#readme",
     "dependencies": {
         "glob": "^7.1.6",
-        "ora": "^3.4.0",
         "semver": "^7.3.5",
         "yargs": "^15.4.1"
     },
