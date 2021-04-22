@@ -1,3 +1,5 @@
 node_modules
 translations
 .DS_Store
+dragoman.config.js
+temp

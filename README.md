@@ -16,49 +16,21 @@ Create a `dragoman.config.js` config file:
 
 ```javascript
 module.exports = {
-    project: "craft",
-    locals: ["es-MX", "jp-JA", "ca-FR", "ko-KR"],
-    content: "./templates",
+    syntax: "twig", // currently supports 'twig'
+    lang: ["es-MX", "jp-JA", "ca-FR", "ko-KR"], // must be an array of strings
+    content: "./templates", // can be an array of template directories
+    output: "./translations",
 };
 ```
 
 Setup an NPM script to run the CLI:
 
 ```json
-"translate:create": "dragoman"
+"translate": "dragoman"
 ```
 
 Run the NPM script:
 
 ```bash
-npm run translate:create
+npm run translate
 ```
-
-## Configuration
-
-Dragoman requires a `dragoman.js` or `dragoman.config.js` configuration file located in the project's root directory. A custom config file location can be provided via the `--config` flag.
-
-```javascript
-module.exports = {
-    project: "craft", // currently supports 'craft'
-    locals: ["es-MX", "jp-JA", "ca-FR", "ko-KR"], // must be an array of strings
-    content: "./templates", // can be an array of template directories
-};
-```
-
-## Translating Strings
-
-When the `dragoman` command runs all translatable strings will be parsed from the provided content directories and used to generate a `translations.csv` file. The file can be imported into applications such as Numbers, Excel, Google Sheets, or OpenOffice Calc.
-
-To convert the CSV file into JSON and PHP use the `--input` flag.
-
-```json
-"translate:convert": "dragoman --input ./translations.csv"
-```
-
-The files will be placed in a `dragoman` directory at your project root. Each local will be split into their own directory with a `site.php` and `site.json` file per local.
-
-## Roadmap
-
--   **0.2:** Symfony support
--   **0.3:** Blade support
